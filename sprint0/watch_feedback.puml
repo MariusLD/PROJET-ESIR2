@@ -1,0 +1,12 @@
+@startuml
+
+Actor User as U
+Participant System as S
+
+
+U -> S: Look through the glasses
+S -> U: Analyse the video
+U -> S: See the names and boxes
+
+
+@enduml
