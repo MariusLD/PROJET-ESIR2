@@ -1,0 +1,21 @@
+@startuml
+skinparam actorStyle awesome
+actor Developer as Dev #LightGreen
+database Database as DB #FFA500 
+entity "Training Device" as IA #9370DB
+Dev -> DB: Authentification Request
+DB -> Dev: Authentification Response
+Dev -> DB: Send raw data addition request
+Dev --> DB: Data augmentation
+DB -> DB: Save data
+DB -> Dev: Log Response
+Dev -> IA: Start retrain IA process with new data
+IA -> DB: Ask database for datasets 
+DB -> DB: Load all datasets
+DB -> DB: Select training dataset
+DB -> DB: Select validation data
+DB -> IA: Send datasets
+IA -> IA: Train data with real-time\n optimized computer vision tool
+IA -> DB: Return of the trained dataset
+DB -> Dev: Log Response
+@enduml
