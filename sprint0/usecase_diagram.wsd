@@ -1,0 +1,24 @@
+@startuml
+skinparam actorStyle awesome
+actor Dev as D
+actor User as U
+
+package System as A {
+usecase "Add a new face data for the IA to train" as UC1
+usecase "Initialize the connection between glasses and App" as UC2
+usecase "Watch the video feedback in real time received from the App" as UC3
+usecase "Analyse a videostream" as UC6
+usecase "Maintain the App / Release updates" as UC5
+(UC3) .> (UC6) : extends
+
+}
+
+
+
+
+U -down-> UC2
+U -down-> UC3
+D -up-> UC1
+D -up-> UC5
+
+@enduml
