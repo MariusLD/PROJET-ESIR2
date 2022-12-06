@@ -1,55 +1,29 @@
 @startuml
 'Bon déroulement
+skinparam actorStyle awesome
 
-Actor User as U
-Participant System as S
+
+Actor User as U #lightgreen
+Participant System as S #lightblue
 
 
 U -> S: Connect the phone to the dock
 U -> S: Connect the glasses to the phone
 U -> S: Launch the app on the phone
+alt Good connection
 S -> U: Ask for access to the peripheral
+alt Authorize
 U -> S: Authorize the connection
 S -> U: Display the interface
-U -> S: Launch the programm
-
-
-@enduml
-
-
-@startuml
-'Erreur autorisation
-
-Actor User as U
-Participant System as S
-
-
-U -> S: Connect the phone to the dock
-U -> S: Connect the glasses to the phone
-U -> S: Launch the app on the phone
-S -> U: Ask for access to the peripheral
+U -> S: Launch the program
+else Reject
 U -> S: Reject the connection
 S -> U: Connection error
-
-@enduml
-
-@startuml
-'Mauvais branchement
-
-Actor User as U
-Participant System as S
-
-
-U -> S: Connect the phone to the dock
-U -> S: Connect the glasses to the phone
-U -> S: Launch the app on the phone
+end
+else Bad connection
 S -> U: Detection error of the device
-U -> S: Verify connections
-S -> U: Ask for access to the peripheral
-U -> S: Authorize the connection
-S -> U: Display the interface
-U -> S: Launch the programm
-
+U -> S: Retry with good connection
+end
 
 
 @enduml

@@ -1,12 +1,18 @@
 @startuml
+skinparam actorStyle awesome
 
-Actor User as U
-Participant System as S
-
-
-U -> S: Look through the glasses
-S -> U: Analyse the video
-U -> S: See the names and boxes
+Actor User as U #lightgreen
+Participant Glasses as G #lightsalmon
+Participant App as S #lightblue
 
 
+U -> G: Watch faces through the glasses
+G -> S: Send video stream
+S -> S: Analyse the video
+S -> G: Get modified videostream
+
+G -> U: Display videostream with names
+
+'Donner feedback
+'Ajouter directement depuis les lunettes
 @enduml
