@@ -1,6 +1,6 @@
 @startuml
 skinparam actorStyle awesome
-actor Developer as Dev #LightGreen
+actor Admnistrator as Dev #LightGreen
 database Database as DB #FFA500 
 entity "Training Device" as IA #9370DB
 Dev -> DB: Authentification Request
