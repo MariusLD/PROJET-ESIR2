@@ -1,4 +1,4 @@
-@startuml
+@startuml Initialize
 'Bon déroulement
 skinparam actorStyle awesome
 

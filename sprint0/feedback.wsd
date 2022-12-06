@@ -1,0 +1,18 @@
+@startuml Feedback
+skinparam actorStyle awesome
+
+Actor User as U #lightgreen
+Participant System as S #lightblue
+Actor Administrator as D #red
+
+
+U -> S: Watch faces with their names through the glasses
+alt Good recognition
+U -> S: Slide to the right because this is the good name
+else Bad Recognition
+U -> S: Slide to the left because this is the bad name
+end
+S -> S: Calculate the recognition rate
+S -> D: Inform the administrator to enhance the system
+
+@enduml

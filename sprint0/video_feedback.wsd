@@ -1,4 +1,4 @@
-@startuml
+@startuml VideoFeedback
 skinparam actorStyle awesome
 
 Actor User as U #lightgreen
