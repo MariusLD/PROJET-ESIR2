@@ -1,5 +1,6 @@
 @startuml
 skinparam actorStyle awesome
+
 title "Analyse Video Stream Diragram"
 
 participant Glasses as G #LightSalmon
