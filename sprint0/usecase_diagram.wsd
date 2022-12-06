@@ -1,4 +1,5 @@
 @startuml
+left to right direction
 skinparam actorStyle awesome
 actor Administrateur as D
 actor User as U
@@ -7,16 +8,16 @@ package System as A {
 usecase "Add a new face data for the IA to train" as UC1
 usecase "Initialize the connection between glasses and App" as UC2
 usecase "Watch the video feedback in real time received from the App" as UC3
-usecase "Maintain the App / Release updates" as UC5
+'usecase "Maintain the App / Release updates" as UC5
 usecase "Analyse a videostream" as UC6
-usecase "send feedback on the face" as UC7
+usecase "Send feedback on the face" as UC7
 (UC3) .> (UC6) : extends
 }
 
-U -down-> UC2
-U -down-> UC3
-U -down-> UC7
-D -up-> UC1
-D -up-> UC5
+U --> UC2
+U --> UC3
+U --> UC7
+D --> UC1
+'D --> UC5
 
 @enduml
