@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">Iristick Examples</string>
+
+    <string name="ok">OK</string>
+
+    <string name="error_no_headset">Please connect your Iristick smart glasses.</string>
+    <string name="error_not_installed">Please install the Iristick Services before using this app.</string>
+    <string name="error_future_sdk">Please upgrade the Iristick Services to the latest version before using this app.</string>
+    <string name="error_deprecated_sdk">Please upgrade this app or downgrade the Iristick Services.</string>
+    <string name="error_other">An unknown error has occurred while connecting to the Iristick Services (code %d).</string>
+
+    <string name="camera_title">Camera Example</string>
+    <string name="camera_description">Open both Iristick cameras and show the captured streams.</string>
+    <string name="camera_permission_denied">Camera permission is required for the camera example.</string>
+    <string name="camera_waiting_for_headset">Waiting for Iristick headset…</string>
+    <string name="camera_not_available">Camera not available</string>
+    <string name="camera_error">Camera error: %d</string>
+    <string name="camera_error_configure">Camera error: failed to create capture session</string>
+    <string name="camera_info_zoom">Zoom: x%d</string>
+    <string name="camera_info_offset">Offset: (%d, %d)</string>
+    <string name="camera_voice_focus">focus</string>
+    <string name="camera_voice_zoom_in">zoom in</string>
+    <string name="camera_voice_zoom_out">zoom out</string>
+    <string name="camera_voice_reset">reset</string>
+
+    <string name="barcode_title">Barcode scanner</string>
+    <string name="barcode_description">Scan for a barcode through an intent.</string>
+    <string name="barcode_scan_any">Scan any barcode</string>
+    <string name="barcode_scan_qr">Scan QR code</string>
+    <string name="barcode_result">Found %s: %s</string>
+    <string name="barcode_error">Barcode scanner returned error %d.</string>
+
+    <string name="displaypresentation_title">Clock Display Example</string>
+    <string name="displaypresentation_description">Custom heads-up display interface displaying current time with standard Android UI elements.</string>
+    <string name="displaypresentation_explanation">This example shows the current time on the display of the attached Iristick smart glasses.</string>
+
+    <string name="displaysurface_title">Bubbles Display Example</string>
+    <string name="displaysurface_description">Draw a bunch of colored moving bubbles on the heads-up display using direct draw operations.</string>
+    <string name="displaysurface_explanation">This example shows moving circles on the display of the attached Iristick smart glasses.</string>
+
+    <string name="sensorscube_title">Rotating Cube Example</string>
+    <string name="sensorscube_description">Show a colored cube that rotates along with the orientation of the smart glasses.</string>
+
+    <string name="sensorsreadout_title">Sensors Readout Example</string>
+    <string name="sensorsreadout_description">Show the measurements of all available sensors in the smart glasses.</string>
+
+    <string name="touchpad_title">Touchpad Example</string>
+    <string name="touchpad_description">Listen to touchpad events, overriding the standard behavior.</string>
+    <string name="touchpad_gesture_title">Gesture</string>
+    <string name="touchpad_drawing_title">Pointer</string>
+    <string name="touchpad_drawing_explanation">Touch the touchpad to move the pencil.\nLong tap to turn on/off the pencil.\nTap to remove the last drawn line.\nDouble tap to clear the entire drawing.</string>
+</resources>

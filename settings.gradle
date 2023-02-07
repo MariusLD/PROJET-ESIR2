@@ -1,0 +1,18 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        ivy { url 'https://developer.iristick.com/repo'}
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        ivy { url 'https://developer.iristick.com/repo'}
+    }
+}
+rootProject.name = "Iristick"
+include ':app'
