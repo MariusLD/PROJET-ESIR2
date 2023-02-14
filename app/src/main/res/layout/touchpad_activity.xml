@@ -13,7 +13,7 @@
         android:textStyle="bold"
         android:text="@string/touchpad_gesture_title" />
 
-    <com.iristick.smartglass.examples.touchpad.GestureView
+    <com.example.iristick.touchpad.GestureView
         android:id="@+id/gesture"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -25,7 +25,7 @@
         android:textStyle="bold"
         android:text="@string/touchpad_drawing_title" />
 
-    <com.iristick.smartglass.examples.touchpad.DrawingArea
+    <com.example.iristick.touchpad.DrawingArea
         android:id="@+id/drawing"
         android:layout_width="match_parent"
         android:layout_height="0dp"
