@@ -21,6 +21,7 @@ import com.example.iristick.R;
 import com.iristick.smartglass.core.Headset;
 import com.iristick.smartglass.core.camera.CameraCharacteristics;
 import com.iristick.smartglass.core.camera.CameraDevice;
+import com.iristick.smartglass.core.camera.CaptureListener;
 import com.iristick.smartglass.core.camera.CaptureRequest;
 import com.iristick.smartglass.core.camera.CaptureSession;
 import com.iristick.smartglass.support.app.IristickApp;
@@ -193,6 +194,12 @@ public class CameraFragment extends Fragment {
         List<Surface> outputs = new ArrayList<>();
         outputs.add(mSurface);
         mCamera.createCaptureSession(outputs, mCaptureSessionListener, null);
+
+        //mCaptureSession.capture(createCaptureRequest(true), null, null);
+        CaptureListener captureListener = new MyCaptureListener();
+
+        int i = mCaptureSession.capture(createCaptureRequest(true), captureListener, null);
+
     }
 
     /**
@@ -231,7 +238,7 @@ public class CameraFragment extends Fragment {
     private void setCapture() {
         if (mCaptureSession == null || mSurface == null)
             return;
-        mCaptureSession.setRepeatingRequest(createCaptureRequest(false), null, null);
+        mCaptureSession.setRepeatingRequest(createCaptureRequest(false), new MyCaptureListener(), null);
 
         /* Update info text. */
         StringBuilder str = new StringBuilder();
@@ -259,6 +266,7 @@ public class CameraFragment extends Fragment {
          * of capture() here.
          */
         mCaptureSession.capture(createCaptureRequest(true), null, null);
+
     }
 
     /** Reset capture settings */
@@ -373,6 +381,7 @@ public class CameraFragment extends Fragment {
 
         @Override
         public void onReady(CaptureSession session) {
+
         }
     };
 
