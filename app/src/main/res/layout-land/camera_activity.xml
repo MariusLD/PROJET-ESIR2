@@ -16,17 +16,4 @@
         android:layout_weight="1"
         app:camera_index="0" />
 
-    <View
-        android:layout_width="8dp"
-        android:layout_height="match_parent"
-        android:background="?android:colorBackground" />
-
-    <fragment
-        android:id="@+id/camera1"
-        android:name="com.example.iristick.camera.CameraFragment"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        app:camera_index="1" />
-
 </LinearLayout>
