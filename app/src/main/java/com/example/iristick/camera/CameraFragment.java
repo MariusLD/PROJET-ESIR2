@@ -196,7 +196,7 @@ public class CameraFragment extends Fragment {
         mCamera.createCaptureSession(outputs, mCaptureSessionListener, null);
 
         //mCaptureSession.capture(createCaptureRequest(true), null, null);
-        CaptureListener captureListener = new MyCaptureListener();
+        CaptureListener captureListener = new MyCaptureListener(mInfo);
 
         int i = mCaptureSession.capture(createCaptureRequest(true), captureListener, null);
 
@@ -238,7 +238,7 @@ public class CameraFragment extends Fragment {
     private void setCapture() {
         if (mCaptureSession == null || mSurface == null)
             return;
-        mCaptureSession.setRepeatingRequest(createCaptureRequest(false), new MyCaptureListener(), null);
+        mCaptureSession.setRepeatingRequest(createCaptureRequest(false), new MyCaptureListener(mInfo), null);
 
         /* Update info text. */
         StringBuilder str = new StringBuilder();

@@ -1,6 +1,7 @@
 package com.example.iristick.camera;
 
 import android.view.Surface;
+import android.widget.TextView;
 
 import com.iristick.smartglass.core.camera.CaptureFailure;
 import com.iristick.smartglass.core.camera.CaptureListener;
@@ -9,6 +10,14 @@ import com.iristick.smartglass.core.camera.CaptureResult;
 import com.iristick.smartglass.core.camera.CaptureSession;
 
 class MyCaptureListener implements CaptureListener {
+
+    TextView mInfo;
+    public MyCaptureListener(TextView mInfo_){
+        mInfo = mInfo_;
+
+    }
+
+
     @Override
     public void onCaptureStarted(CaptureSession session, CaptureRequest request,
                                  long timestamp, long frameNumber) {
@@ -27,8 +36,10 @@ class MyCaptureListener implements CaptureListener {
     @Override
     public void onCaptureCompleted(CaptureSession session, CaptureRequest request,
                                    CaptureResult result) {
-        System.out.println(result.getKeys());
         /* This is called when an image capture has completed successfully. */
+        mInfo.setText("Frame number " + (int) result.getFrameNumber()) ;
+
+
     }
 
     @Override
