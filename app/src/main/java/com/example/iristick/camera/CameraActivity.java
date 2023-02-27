@@ -57,6 +57,13 @@ public class CameraActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
+            /*
+             * This activity cannot work without camera, hence we close the app if the user rejects
+             * the permission. A real-world application should fall back to functioning without
+             * camera if possible.
+             * Check the Android documentation for best practices on permissions at
+             * https://developer.android.com/training/permissions/usage-notes
+             */
             finish();
         }
     }
@@ -86,6 +93,22 @@ public class CameraActivity extends BaseActivity {
     }
 
     private final VoiceEvent.Callback mVoiceCallback = event -> {
-
+        CameraFragment fragment = (CameraFragment) getFragmentManager().findFragmentById(R.id.camera1);
+        if (fragment == null)
+            return;
+        switch (VoiceCommand.VALUES[event.getCommandIndex()]) {
+        case FOCUS:
+            fragment.triggerAF();
+            break;
+        case ZOOM_IN:
+            fragment.zoom(2.0f);
+            break;
+        case ZOOM_OUT:
+            fragment.zoom(0.5f);
+            break;
+        case RESET:
+            fragment.resetSettings();
+            break;
+        }
     };
 }
