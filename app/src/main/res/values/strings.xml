@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Camera Template</string>
+
+    <string name="toggle_flashlight">Toggle flashlight</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="zoom_out">Zoom out</string>
+    <string name="camera_up">Camera up</string>
+    <string name="camera_center">Camera center</string>
+    <string name="camera_down">Camera down</string>
+    <string name="focus">Focus</string>
+    <string name="take_picture">Take picture</string>
+</resources>
