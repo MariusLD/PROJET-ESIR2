@@ -26,34 +26,40 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.iristick.smartglass:core:1.3.4'
-    implementation 'com.iristick.smartglass:support:1.3.4'
+    implementation 'androidx.core:core-ktx:1.8s.0'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
+    implementation 'com.iristick.smartglass:core:1.3.2'
+    implementation 'com.iristick.smartglass:support:1.3.2'
+    implementation 'com.google.android.gms:play-services-tasks:18.0.1'
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.0.1'
+    implementation 'com.google.mlkit:vision-common:17.1.0'
 
     // ML Kit related dependencies
 
     // Barcode model
-    implementation 'com.google.mlkit:barcode-scanning:17.0.3'
+    implementation 'com.google.mlkit:barcode-scanning:17.0.2'
 
     // Object detection and tracking features
     implementation 'com.google.mlkit:object-detection:17.0.0'
     implementation 'com.google.mlkit:object-detection-custom:17.0.0'
 
     // Face features
-    implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.1.0'
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.0.1'
 
     // Text features
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 
     // Image labeling
     implementation 'com.google.mlkit:image-labeling:17.0.7'
 
     // Language Identification
-    implementation 'com.google.mlkit:language-id:17.0.4'
+    implementation 'com.google.mlkit:language-id:17.0.3'
+
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // Face features
-    implementation 'com.google.mlkit:face-detection:16.1.5'
+    implementation 'com.google.mlkit:face-detection:16.0.0'
 }
