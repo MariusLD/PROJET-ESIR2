@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mImageReader = ImageReader.newInstance(sizes[0].x, sizes[0].y,
-                ImageFormat.JPEG, 5000);
+                ImageFormat.JPEG, 100);
 
 
 
