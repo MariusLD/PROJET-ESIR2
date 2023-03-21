@@ -60,10 +60,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mImageView;
     private Bitmap mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
-    // Max width (portrait mode)
-    private Integer mImageMaxWidth;
-    // Max height (portrait mode)
-    private Integer mImageMaxHeight;
 
     private enum VoiceCommand {
         TOGGLE_TORCH(R.string.toggle_flashlight),
@@ -126,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mGraphicOverlay = findViewById(R.id.graphic_overlay);
+
         mPreview = findViewById(R.id.preview);
 
         ImageView imageView = (ImageView) findViewById(R.id.image_view);
@@ -140,11 +138,8 @@ public class MainActivity extends AppCompatActivity {
                 takePicture();
                 pictures_number++;
 
-
                 TextView testView = (TextView) MainActivity.this.findViewById(R.id.test);
                 testView.setText("Nombre photos : "+ pictures_number);
-
-
 
                 // Call the runnable again after a specified delay
                 handler.postDelayed(this, 3000); // 1000ms = 1 second
