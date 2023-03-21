@@ -1,11 +1,9 @@
 package com.iristick.camera.template;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -17,11 +15,9 @@ import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
@@ -29,6 +25,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.iristick.smartglass.core.Headset;
 import com.iristick.smartglass.core.VoiceEvent;
 import com.iristick.smartglass.core.camera.Barcode;
@@ -41,21 +44,31 @@ import com.iristick.smartglass.core.camera.CaptureResult;
 import com.iristick.smartglass.core.camera.CaptureSession;
 import com.iristick.smartglass.support.app.IristickApp;
 
-import org.w3c.dom.Text;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.widget.Button;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+    private ImageView mImageView;
+    private Button mChooseButton;
+    private Button mFaceButton;
+    private Bitmap mSelectedImage;
+    private GraphicOverlay mGraphicOverlay;
+    // Max width (portrait mode)
+    private Integer mImageMaxWidth;
+    // Max height (portrait mode)
+    private Integer mImageMaxHeight;
 
     private enum VoiceCommand {
         TOGGLE_TORCH(R.string.toggle_flashlight),
@@ -152,6 +165,8 @@ public class MainActivity extends AppCompatActivity {
 
         canvas.drawRect(0, 0, 500, 500, paint);
 
+        mSelectedImage = bitmap;
+        runFaceContourDetection();
         imageView.setImageBitmap(bitmap);
 
         handler.postDelayed(runnable, 3000);
@@ -564,5 +579,122 @@ public class MainActivity extends AppCompatActivity {
         cameraOffset.y = 0;
 
         setCapture();
+    }
+
+    private void runFaceContourDetection() {
+        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
+        FaceDetectorOptions options =
+                new FaceDetectorOptions.Builder()
+                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+                        .enableTracking()
+                        .build();
+
+        // Permet de faire plusieurs détection dans une image
+        // .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+
+        mFaceButton.setEnabled(false);
+        FaceDetector detector = FaceDetection.getClient(options);
+        detector.process(image)
+                .addOnSuccessListener(
+                        new OnSuccessListener<List<Face>>() {
+                            @Override
+                            public void onSuccess(List<Face> faces) {
+                                mFaceButton.setEnabled(true);
+                                processFaceContourDetectionResult(faces);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Task failed with an exception
+                                mFaceButton.setEnabled(true);
+                                e.printStackTrace();
+                            }
+                        });
+
+    }
+
+    private void processFaceContourDetectionResult(List<Face> faces) {
+        // Task completed successfully
+        if (faces.size() == 0) {
+            showToast("No face found");
+            return;
+        }
+        else {
+            mGraphicOverlay.clear();
+            for (Face face: faces) {
+                FaceContourGraphic faceGraphic = new FaceContourGraphic(mGraphicOverlay);
+                mGraphicOverlay.add(faceGraphic);
+                faceGraphic.updateFace(face);
+            }
+            showToast(faces.size() + " Visages");
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    // Functions for loading images from app assets.
+
+    // Returns max image width, always for portrait mode. Caller needs to swap width / height for
+    // landscape mode.
+    private Integer getImageMaxWidth() {
+        if (mImageMaxWidth == null) {
+            // Calculate the max width in portrait mode. This is done lazily since we need to
+            // wait for
+            // a UI layout pass to get the right values. So delay it to first time image
+            // rendering time.
+            mImageMaxWidth = mImageView.getWidth();
+        }
+
+        return mImageMaxWidth;
+    }
+
+    // Returns max image height, always for portrait mode. Caller needs to swap width / height for
+    // landscape mode.
+    private Integer getImageMaxHeight() {
+        if (mImageMaxHeight == null) {
+            // Calculate the max width in portrait mode. This is done lazily since we need to
+            // wait for
+            // a UI layout pass to get the right values. So delay it to first time image
+            // rendering time.
+            mImageMaxHeight =
+                    mImageView.getHeight();
+        }
+
+        return mImageMaxHeight;
+    }
+
+    // Gets the targeted width / height.
+    private Pair<Integer, Integer> getTargetedWidthHeight() {
+        int targetWidth;
+        int targetHeight;
+        int maxWidthForPortraitMode = getImageMaxWidth();
+        int maxHeightForPortraitMode = getImageMaxHeight();
+        targetWidth = maxWidthForPortraitMode;
+        targetHeight = maxHeightForPortraitMode;
+        return new Pair<>(targetWidth, targetHeight);
+    }
+
+
+
+
+
+    public static Bitmap getBitmapFromAsset(Context context, String filePath) {
+        AssetManager assetManager = context.getAssets();
+
+        InputStream is;
+        Bitmap bitmap = null;
+        try {
+            is = assetManager.open(filePath);
+            bitmap = BitmapFactory.decodeStream(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return bitmap;
     }
 }
