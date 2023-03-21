@@ -636,35 +636,4 @@ public class MainActivity extends AppCompatActivity {
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
-
-    // Functions for loading images from app assets.
-
-    // Returns max image width, always for portrait mode. Caller needs to swap width / height for
-    // landscape mode.
-    private Integer getImageMaxWidth() {
-        if (mImageMaxWidth == null) {
-            // Calculate the max width in portrait mode. This is done lazily since we need to
-            // wait for
-            // a UI layout pass to get the right values. So delay it to first time image
-            // rendering time.
-            mImageMaxWidth = mImageView.getWidth();
-        }
-
-        return mImageMaxWidth;
-    }
-
-    // Returns max image height, always for portrait mode. Caller needs to swap width / height for
-    // landscape mode.
-    private Integer getImageMaxHeight() {
-        if (mImageMaxHeight == null) {
-            // Calculate the max width in portrait mode. This is done lazily since we need to
-            // wait for
-            // a UI layout pass to get the right values. So delay it to first time image
-            // rendering time.
-            mImageMaxHeight =
-                    mImageView.getHeight();
-        }
-
-        return mImageMaxHeight;
-    }
 }
