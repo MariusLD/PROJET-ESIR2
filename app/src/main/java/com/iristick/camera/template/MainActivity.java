@@ -460,7 +460,27 @@ public class MainActivity extends AppCompatActivity {
 
                 mSelectedImage = bitmapImage;
                 runFaceContourDetection();
-                imageView.setImageBitmap(bitmapImage);
+                // Get the dimensions of the View
+                Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
+
+                int targetWidth = targetedSize.first;
+                int maxHeight = targetedSize.second;
+
+                // Determine how much to scale down the image
+                float scaleFactor =
+                        Math.max(
+                                (float) mSelectedImage.getWidth() / (float) targetWidth,
+                                (float) mSelectedImage.getHeight() / (float) maxHeight);
+
+                Bitmap resizedBitmap =
+                        Bitmap.createScaledBitmap(
+                                mSelectedImage,
+                                (int) (mSelectedImage.getWidth() / scaleFactor),
+                                (int) (mSelectedImage.getHeight() / scaleFactor),
+                                true);
+
+                imageView.setImageBitmap(resizedBitmap);
+                mSelectedImage = resizedBitmap;
 
 
 //                try (OutputStream os = new FileOutputStream(file)) {
@@ -622,4 +642,19 @@ public class MainActivity extends AppCompatActivity {
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
+    // Functions for loading images from app assets.
+
+
+    // Gets the targeted width / height.
+    private Pair<Integer, Integer> getTargetedWidthHeight() {
+        int targetWidth;
+        int targetHeight;
+        int maxWidthForPortraitMode = mImageView.getWidth();
+        int maxHeightForPortraitMode = mImageView.getHeight();
+        targetWidth = maxWidthForPortraitMode;
+        targetHeight = maxHeightForPortraitMode;
+        return new Pair<>(targetWidth, targetHeight);
+    }
+
 }
