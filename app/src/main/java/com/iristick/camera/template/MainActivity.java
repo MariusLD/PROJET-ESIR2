@@ -1,5 +1,9 @@
 package com.iristick.camera.template;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -133,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
         mPreview = findViewById(R.id.preview);
 
-        ImageView imageView = (ImageView) findViewById(R.id.view2);
+        ImageView imageView = (ImageView) findViewById(R.id.image_view);
 
         cameraOffset = new Point(0,0);
 
@@ -464,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
             if (image != null) {
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
-                ImageView imageView = (ImageView) findViewById(R.id.view2);
+                ImageView imageView = (ImageView) findViewById(R.id.image_view);
 
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
