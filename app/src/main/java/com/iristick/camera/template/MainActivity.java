@@ -48,25 +48,16 @@ import com.iristick.smartglass.core.camera.CaptureResult;
 import com.iristick.smartglass.core.camera.CaptureSession;
 import com.iristick.smartglass.support.app.IristickApp;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import android.widget.Button;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ImageView mImageView;
-    private Button mChooseButton;
-    private Button mFaceButton;
     private Bitmap mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
     // Max width (portrait mode)
@@ -169,8 +160,6 @@ public class MainActivity extends AppCompatActivity {
 
         canvas.drawRect(0, 0, 500, 500, paint);
 
-        mSelectedImage = bitmap;
-        runFaceContourDetection();
         imageView.setImageBitmap(bitmap);
 
         handler.postDelayed(runnable, 3000);
@@ -474,7 +463,8 @@ public class MainActivity extends AppCompatActivity {
                 buffer.get(bytes);
                 Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
-
+                mSelectedImage = bitmapImage;
+                runFaceContourDetection();
                 imageView.setImageBitmap(bitmapImage);
 
 
@@ -597,14 +587,12 @@ public class MainActivity extends AppCompatActivity {
         // Permet de faire plusieurs détection dans une image
         // .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
 
-        mFaceButton.setEnabled(false);
         FaceDetector detector = FaceDetection.getClient(options);
         detector.process(image)
                 .addOnSuccessListener(
                         new OnSuccessListener<List<Face>>() {
                             @Override
                             public void onSuccess(List<Face> faces) {
-                                mFaceButton.setEnabled(true);
                                 processFaceContourDetectionResult(faces);
                             }
                         })
@@ -613,7 +601,6 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onFailure(@NonNull Exception e) {
                                 // Task failed with an exception
-                                mFaceButton.setEnabled(true);
                                 e.printStackTrace();
                             }
                         });
