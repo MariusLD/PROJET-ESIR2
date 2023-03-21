@@ -445,7 +445,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onCaptureCompleted(@NonNull CaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult result) {
 
-
+            mGraphicOverlay.clear();
             Image image = mImageReader.acquireLatestImage();
 
 
