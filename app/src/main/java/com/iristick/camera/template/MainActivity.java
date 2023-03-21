@@ -57,7 +57,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private ImageView mImageView;
+    private  ImageView imageView;
     private Bitmap mSelectedImage;
     private GraphicOverlay mGraphicOverlay;
 
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
         mPreview = findViewById(R.id.preview);
 
-        ImageView imageView = (ImageView) findViewById(R.id.image_view);
+        imageView = (ImageView) findViewById(R.id.image_view);
 
         cameraOffset = new Point(0,0);
 
@@ -651,8 +651,8 @@ public class MainActivity extends AppCompatActivity {
     private Pair<Integer, Integer> getTargetedWidthHeight() {
         int targetWidth;
         int targetHeight;
-        int maxWidthForPortraitMode = mImageView.getWidth();
-        int maxHeightForPortraitMode = mImageView.getHeight();
+        int maxWidthForPortraitMode = imageView.getWidth();
+        int maxHeightForPortraitMode = imageView.getHeight();
         targetWidth = maxWidthForPortraitMode;
         targetHeight = maxHeightForPortraitMode;
         return new Pair<>(targetWidth, targetHeight);
