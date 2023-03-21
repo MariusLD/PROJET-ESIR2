@@ -667,34 +667,4 @@ public class MainActivity extends AppCompatActivity {
 
         return mImageMaxHeight;
     }
-
-    // Gets the targeted width / height.
-    private Pair<Integer, Integer> getTargetedWidthHeight() {
-        int targetWidth;
-        int targetHeight;
-        int maxWidthForPortraitMode = getImageMaxWidth();
-        int maxHeightForPortraitMode = getImageMaxHeight();
-        targetWidth = maxWidthForPortraitMode;
-        targetHeight = maxHeightForPortraitMode;
-        return new Pair<>(targetWidth, targetHeight);
-    }
-
-
-
-
-
-    public static Bitmap getBitmapFromAsset(Context context, String filePath) {
-        AssetManager assetManager = context.getAssets();
-
-        InputStream is;
-        Bitmap bitmap = null;
-        try {
-            is = assetManager.open(filePath);
-            bitmap = BitmapFactory.decodeStream(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return bitmap;
-    }
 }
