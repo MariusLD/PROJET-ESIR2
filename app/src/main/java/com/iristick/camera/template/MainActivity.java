@@ -459,7 +459,6 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
                 mSelectedImage = bitmapImage;
-                runFaceContourDetection();
                 // Get the dimensions of the View
                 Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
 
@@ -481,6 +480,8 @@ public class MainActivity extends AppCompatActivity {
 
                 imageView.setImageBitmap(resizedBitmap);
                 mSelectedImage = resizedBitmap;
+                runFaceContourDetection();
+
 
 
 //                try (OutputStream os = new FileOutputStream(file)) {
