@@ -134,8 +134,9 @@ public class MainActivity extends AppCompatActivity {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                if(pictures_number >= 18) {
-
+                if(pictures_number >= 5) {
+                    createCaptureSession();
+                    pictures_number = 0;
                 }
                 // Call your function here
                 takePicture();
