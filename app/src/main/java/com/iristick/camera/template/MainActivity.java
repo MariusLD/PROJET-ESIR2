@@ -134,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                if(pictures_number >= 18) {
+
+                }
                 // Call your function here
                 takePicture();
                 pictures_number++;
@@ -252,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mImageReader = ImageReader.newInstance(sizes[0].x, sizes[0].y,
-                ImageFormat.JPEG, 20);
+                ImageFormat.JPEG, 50);
 
 
 
