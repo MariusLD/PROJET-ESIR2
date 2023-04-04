@@ -638,7 +638,11 @@ public class MainActivity extends AppCompatActivity {
                 mGraphicOverlay.add(faceGraphic);
                 faceGraphic.updateFace(face);
             }
-            showToast(faces.size() + " Visages");
+            if (faces.size() == 1) {
+                showToast("1 Visage");
+            }
+            else
+                showToast(faces.size() + " Visages");
         }
     }
 
