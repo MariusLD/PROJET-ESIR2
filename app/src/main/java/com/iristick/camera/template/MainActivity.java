@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     private CaptureSession mCaptureSession;
     private int pictures_number;
 
+    private double start_timer = System.currentTimeMillis();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -237,7 +239,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        takePicture();
+        double timer = System.currentTimeMillis();
+        if(timer-start_timer > 1000) {
+            start_timer = timer;
+            takePicture();
+        }
         return super.onTouchEvent(event);
     }
 
