@@ -130,26 +130,26 @@ public class MainActivity extends AppCompatActivity {
 
         cameraOffset = new Point(0,0);
 
-        Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if(pictures_number >= 5) {
-                    createCaptureSession();
-                    pictures_number = 0;
-                }
-                // Call your function here
-                takePicture();
-                pictures_number++;
-
-                TextView testView = (TextView) MainActivity.this.findViewById(R.id.test);
-                testView.setText("Nombre photos : "+ pictures_number);
-
-                // Call the runnable again after a specified delay
-                handler.postDelayed(this, 3000); // 1000ms = 1 second
-            }
-        };
-
+//        Handler handler = new Handler();
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                if(pictures_number >= 48) {
+//                    createCaptureSession();
+//                    pictures_number = 0;
+//                }
+//                // Call your function here
+//                takePicture();
+//                pictures_number++;
+//
+//                TextView testView = (TextView) MainActivity.this.findViewById(R.id.test);
+//                testView.setText("Nombre photos : "+ pictures_number);
+//
+//                // Call the runnable again after a specified delay
+//                handler.postDelayed(this, 3000); // 1000ms = 1 second
+//            }
+//        };
+//
         Bitmap bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(bitmap);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageView.setImageBitmap(bitmap);
 
-        handler.postDelayed(runnable, 3000);
+        //handler.postDelayed(runnable, 3000);
 
         requestPermissions();
     }
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //takePicture();
+        takePicture();
         return super.onTouchEvent(event);
     }
 
@@ -257,8 +257,6 @@ public class MainActivity extends AppCompatActivity {
 
         mImageReader = ImageReader.newInstance(sizes[0].x, sizes[0].y,
                 ImageFormat.JPEG, 50);
-
-
 
 
         mImageReader.setOnImageAvailableListener(null, null);
@@ -416,6 +414,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        pictures_number++;
 
         CaptureRequest.Builder builder = mCamera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
         builder.addTarget(mImageReader.getSurface());
@@ -460,9 +459,8 @@ public class MainActivity extends AppCompatActivity {
 
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
-                Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
-                mSelectedImage = bitmapImage;
+                mSelectedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                 // Get the dimensions of the View
                 Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
 
