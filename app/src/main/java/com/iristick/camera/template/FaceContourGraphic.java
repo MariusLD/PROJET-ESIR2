@@ -68,8 +68,8 @@ public class FaceContourGraphic extends GraphicOverlay.Graphic {
         }
 
         // Draws a circle at the position of the detected face, with the face's track id below.
-        float x = translateX(face.getBoundingBox().centerX()) + 300;
-        float y = translateY(face.getBoundingBox().centerY());
+        float x = (float) (translateX(face.getBoundingBox().centerX())*1.58);
+        float y = (float) ((float)(translateY(face.getBoundingBox().centerY())-100)*1.58);
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
         canvas.drawText("id: " + face.getTrackingId(), x + ID_X_OFFSET, y + ID_Y_OFFSET, idPaint);
 
