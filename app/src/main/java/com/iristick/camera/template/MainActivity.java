@@ -1,5 +1,7 @@
 package com.iristick.camera.template;
 
+import static com.iristick.smartglass.core.TouchEvent.GESTURE_TAP;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +39,7 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.iristick.smartglass.core.Headset;
+import com.iristick.smartglass.core.TouchEvent;
 import com.iristick.smartglass.core.VoiceEvent;
 import com.iristick.smartglass.core.camera.Barcode;
 import com.iristick.smartglass.core.camera.CameraCharacteristics;
@@ -207,6 +210,25 @@ public class MainActivity extends AppCompatActivity {
         if (mHeadset != null) {
             //mHeadset.setLaserPointer(true);
             //mHeadset.setTorchMode(isTorchActive);
+
+            mHeadset.registerTouchEventCallback(new TouchEvent.Callback() {
+                @Override
+                public void onTouchEvent(@NonNull TouchEvent event) {
+                    /* Process the touch event here:
+                     * event.getGestureCode() returns the simple gesture that was
+                     *     recognized, or TouchEvent.GESTURE_NONE if none;
+                     * event.getMotionEvent() returns the precise motion data or
+                     *     null if such data is not available.
+                     */
+                    if(event.getGestureCode() == GESTURE_TAP) {
+                        double timer = System.currentTimeMillis();
+                        if(timer-start_timer > 1000) {
+                            start_timer = timer;
+                            takePicture();
+                        }
+                    }
+                }
+            }, null);
 
             String[] commands = new String[VoiceCommand.VALUES.length];
             for (int i = 0; i < VoiceCommand.VALUES.length; i++)
@@ -490,16 +512,6 @@ public class MainActivity extends AppCompatActivity {
                 mSelectedImage = resizedBitmap;
                 runFaceContourDetection();
 
-
-
-//                try (OutputStream os = new FileOutputStream(file)) {
-//                    Channels.newChannel(os).write(buffer);
-//
-//                    Toast.makeText(MainActivity.this, "Picture taken!", Toast.LENGTH_SHORT).show();
-//                } catch (IOException e) {
-//                    Toast.makeText(MainActivity.this, "Error taking picture", Toast.LENGTH_SHORT).show();
-//                    e.printStackTrace();
-//                }
             } else {
                 Toast.makeText(MainActivity.this, "No picture taken", Toast.LENGTH_SHORT).show();
             }
