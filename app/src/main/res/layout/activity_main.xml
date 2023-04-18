@@ -37,7 +37,7 @@
         android:contentDescription="@string/select_image_for_text_recognition" />
 
 
-    <com.iristick.camera.template.GraphicOverlay
+    <com.iristick.camera.template.helpers.vision.GraphicOverlay
         android:id="@+id/graphic_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

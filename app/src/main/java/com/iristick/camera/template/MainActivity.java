@@ -4,12 +4,12 @@ import static com.iristick.smartglass.core.TouchEvent.GESTURE_TAP;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 
 import android.Manifest;
-import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -22,22 +22,23 @@ import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
-import android.os.Handler;
+import android.text.Editable;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
-import com.google.mlkit.vision.face.FaceDetection;
-import com.google.mlkit.vision.face.FaceDetector;
-import com.google.mlkit.vision.face.FaceDetectorOptions;
+import com.iristick.camera.template.helpers.MLImageHelperActivity;
+import com.iristick.camera.template.helpers.MLVideoHelperActivity;
+import com.iristick.camera.template.helpers.vision.GraphicOverlay;
+import com.iristick.camera.template.helpers.vision.VisionBaseProcessor;
+import com.iristick.camera.template.helpers.vision.recogniser.FaceRecognitionProcessor;
 import com.iristick.smartglass.core.Headset;
 import com.iristick.smartglass.core.TouchEvent;
 import com.iristick.smartglass.core.VoiceEvent;
@@ -51,6 +52,10 @@ import com.iristick.smartglass.core.camera.CaptureResult;
 import com.iristick.smartglass.core.camera.CaptureSession;
 import com.iristick.smartglass.support.app.IristickApp;
 
+import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.support.common.FileUtil;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,7 +63,16 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends MLVideoHelperActivity implements FaceRecognitionProcessor.FaceRecognitionCallback {
+
+
+    private Interpreter faceNetInterpreter;
+    private FaceRecognitionProcessor faceRecognitionProcessor;
+
+    private Face face;
+    private Bitmap faceBitmap;
+    private float[] faceVector;
+
     private static final String TAG = "MainActivity";
     private  ImageView imageView;
     private Bitmap mSelectedImage;
@@ -119,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
     private Surface mSurface;
     private CaptureSession mCaptureSession;
     private int pictures_number;
+
+
 
     private double start_timer = System.currentTimeMillis();
 
@@ -282,10 +298,8 @@ public class MainActivity extends AppCompatActivity {
                 .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
                 .getSizes(CaptureRequest.FORMAT_JPEG);
 
-
         mImageReader = ImageReader.newInstance(sizes[0].x, sizes[0].y,
                 ImageFormat.JPEG, 50);
-
 
         mImageReader.setOnImageAvailableListener(null, null);
 
@@ -450,6 +464,8 @@ public class MainActivity extends AppCompatActivity {
         setupCaptureRequest(builder);
 
         mCaptureSession.capture(builder.build(), mCaptureListenerTakePicture, null);
+
+
     }
 
     private final CaptureListener mCaptureListenerBarcode = new CaptureListener2() {
@@ -478,7 +494,6 @@ public class MainActivity extends AppCompatActivity {
 
             mGraphicOverlay.clear();
             Image image = mImageReader.acquireLatestImage();
-
 
             if (image != null) {
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -510,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
 
                 imageView.setImageBitmap(resizedBitmap);
                 mSelectedImage = resizedBitmap;
-                runFaceContourDetection();
+
 
             } else {
                 Toast.makeText(MainActivity.this, "No picture taken", Toast.LENGTH_SHORT).show();
@@ -611,59 +626,6 @@ public class MainActivity extends AppCompatActivity {
         setCapture();
     }
 
-    private void runFaceContourDetection() {
-        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
-        FaceDetectorOptions options =
-                new FaceDetectorOptions.Builder()
-                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-                        .enableTracking()
-                        .build();
-
-        // Permet de faire plusieurs détection dans une image
-        // .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-
-        FaceDetector detector = FaceDetection.getClient(options);
-        detector.process(image)
-                .addOnSuccessListener(
-                        new OnSuccessListener<List<Face>>() {
-                            @Override
-                            public void onSuccess(List<Face> faces) {
-                                processFaceContourDetectionResult(faces);
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Task failed with an exception
-                                e.printStackTrace();
-                            }
-                        });
-
-    }
-
-    private void processFaceContourDetectionResult(List<Face> faces) {
-        // Task completed successfully
-        if (faces.size() == 0) {
-            showToast("No face found");
-            return;
-        }
-        else {
-            mGraphicOverlay.clear();
-            for (Face face: faces) {
-                FaceContourGraphic faceGraphic = new FaceContourGraphic(mGraphicOverlay);
-                mGraphicOverlay.add(faceGraphic);
-                faceGraphic.updateFace(face);
-            }
-            if (faces.size() == 1) {
-                showToast("1 Visage");
-            }
-            else
-                showToast(faces.size() + " Visages");
-        }
-    }
-
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
@@ -680,6 +642,73 @@ public class MainActivity extends AppCompatActivity {
         targetWidth = maxWidthForPortraitMode;
         targetHeight = maxHeightForPortraitMode;
         return new Pair<>(targetWidth, targetHeight);
+    }
+
+
+    @Override
+    protected VisionBaseProcessor setProcessor() {
+        try {
+            faceNetInterpreter = new Interpreter(FileUtil.loadMappedFile(this, "mobile_face_net.tflite"), new Interpreter.Options());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        faceRecognitionProcessor = new FaceRecognitionProcessor(
+                faceNetInterpreter,
+                graphicOverlay,
+                this
+        );
+        faceRecognitionProcessor.activity = this;
+        return faceRecognitionProcessor;
+    }
+
+    public void setTestImage(Bitmap cropToBBox) {
+        if (cropToBBox == null) {
+            return;
+        }
+        runOnUiThread(() -> ((ImageView) findViewById(R.id.testImageView)).setImageBitmap(cropToBBox));
+    }
+
+    @Override
+    public void onFaceDetected(Face face, Bitmap faceBitmap, float[] faceVector) {
+        this.face = face;
+        this.faceBitmap = faceBitmap;
+        this.faceVector = faceVector;
+    }
+
+    @Override
+    public void onFaceRecognised(Face face, float probability, String name) {
+
+    }
+
+    @Override
+    public void onAddFaceClicked(View view) {
+        super.onAddFaceClicked(view);
+
+        if (face == null || faceBitmap == null) {
+            return;
+        }
+
+        Face tempFace = face;
+        Bitmap tempBitmap = faceBitmap;
+        float[] tempVector = faceVector;
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.add_face_dialog, null);
+        ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Editable input  = ((EditText) dialogView.findViewById(R.id.dlg_input)).getEditableText();
+                if (input.length() > 0) {
+                    faceRecognitionProcessor.registerFace(input, tempVector);
+                }
+            }
+        });
+        builder.show();
     }
 
 }
