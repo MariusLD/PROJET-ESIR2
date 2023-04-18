@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import android.Manifest;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,7 +21,9 @@ import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,7 +35,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.mlkit.vision.face.Face;
-import com.iristick.camera.template.helpers.MLImageHelperActivity;
 import com.iristick.camera.template.helpers.MLVideoHelperActivity;
 import com.iristick.camera.template.helpers.vision.GraphicOverlay;
 import com.iristick.camera.template.helpers.vision.VisionBaseProcessor;
@@ -55,6 +55,8 @@ import com.iristick.smartglass.support.app.IristickApp;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
@@ -134,8 +136,6 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     private CaptureSession mCaptureSession;
     private int pictures_number;
 
-
-
     private double start_timer = System.currentTimeMillis();
 
     @Override
@@ -185,7 +185,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         //handler.postDelayed(runnable, 3000);
 
         requestPermissions();
-        makeAddFaceVisible();
+        //makeAddFaceVisible();
     }
 
     private void requestPermissions() {
@@ -276,8 +276,14 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         super.onPause();
     }
 
+
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+
+
         double timer = System.currentTimeMillis();
         if(timer-start_timer > 1000) {
             start_timer = timer;
@@ -495,11 +501,13 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
             mGraphicOverlay.clear();
             Image image = mImageReader.acquireLatestImage();
-
             if (image != null) {
+
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
+
                 ImageView imageView = (ImageView) findViewById(R.id.image_view);
+
 
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
@@ -524,9 +532,22 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
                                 (int) (mSelectedImage.getHeight() / scaleFactor),
                                 true);
 
+
                 imageView.setImageBitmap(resizedBitmap);
                 mSelectedImage = resizedBitmap;
 
+
+                try{
+                    faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
+                } catch (Exception e) {
+
+                    //open a file, write the error and close it
+
+
+                    e.printStackTrace();
+
+                }
+                writeError("1" ,getFilesDir().toString());
 
             } else {
                 Toast.makeText(MainActivity.this, "No picture taken", Toast.LENGTH_SHORT).show();
@@ -710,6 +731,21 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
             }
         });
         builder.show();
+    }
+
+
+    public static void writeError(String msg,String loc){
+        try {
+            File file = new File(loc + "/error");
+
+            FileOutputStream stream = new FileOutputStream(file);
+
+            stream.write(msg.getBytes());
+
+            stream.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
 }
