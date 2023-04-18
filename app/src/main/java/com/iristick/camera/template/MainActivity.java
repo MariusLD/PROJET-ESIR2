@@ -185,6 +185,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         //handler.postDelayed(runnable, 3000);
 
         requestPermissions();
+        makeAddFaceVisible();
     }
 
     private void requestPermissions() {
@@ -666,7 +667,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         if (cropToBBox == null) {
             return;
         }
-        runOnUiThread(() -> ((ImageView) findViewById(R.id.testImageView)).setImageBitmap(cropToBBox));
+        runOnUiThread(() -> ((ImageView) findViewById(R.id.image_view)).setImageBitmap(cropToBBox));
     }
 
     @Override
@@ -694,8 +695,8 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         float[] tempVector = faceVector;
 
         LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.add_face_dialog, null);
-        ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
+        View dialogView = inflater.inflate(R.layout.activity_main, null);
+        ((ImageView) dialogView.findViewById(R.id.image_view)).setImageBitmap(tempBitmap);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
