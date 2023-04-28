@@ -532,7 +532,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 //                mSelectedImage = resizedBitmap;
 
                 Task<List<Face>> test = faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
-                //writeError(face==null ? "non" : face.toString(), getFilesDir().toString());
+                //writeError(face==null ? "non" : "youpi ! " + face.toString(), getFilesDir().toString());
 
                 test.addOnSuccessListener(new OnSuccessListener<List<Face>>() {
                     @Override
@@ -668,7 +668,6 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         try {
             faceNetInterpreter = new Interpreter(FileUtil.loadMappedFile(this, "mobile_face_net.tflite"), new Interpreter.Options());
         } catch (IOException e) {
-            writeError("interpreter failed", getFilesDir().toString());
             e.printStackTrace();
         }
         faceRecognitionProcessor = new FaceRecognitionProcessor(
@@ -704,7 +703,6 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         super.onAddFaceClicked(view);
 
         if (face == null || faceBitmap == null) {
-            writeError("rate", getFilesDir().toString());
             return;
         }
 
@@ -713,8 +711,8 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         float[] tempVector = faceVector;
 
         LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.activity_main, null);
-        ((ImageView) dialogView.findViewById(R.id.image_view)).setImageBitmap(tempBitmap);
+        View dialogView = inflater.inflate(R.layout.add_face_dialog, null);
+        ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);

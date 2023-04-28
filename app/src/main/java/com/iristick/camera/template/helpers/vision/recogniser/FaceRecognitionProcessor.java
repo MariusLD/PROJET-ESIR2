@@ -140,7 +140,6 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
                             if (callback != null) {
                                 callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
-                                writeError("arrive2", activity.getFilesDir().toString());
                                 if (!recognisedFaceList.isEmpty()) {
                                     Pair<String, Float> result = findNearestFace(faceOutputArray[0]);
                                     // if distance is within confidence
@@ -215,6 +214,11 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     // Register a name against the vector
     public void registerFace(Editable input, float[] tempVector) {
         recognisedFaceList.add(new Person(input.toString(), tempVector));
+        StringBuilder names = new StringBuilder();
+        for(Person p : recognisedFaceList) {
+            names.append(p.name).append(" ");
+        }
+        writeError(names.toString(), activity.getFilesDir().toString());
     }
 
     public static void writeError(String msg,String loc){

@@ -11,4 +11,5 @@
     <string name="select_image_for_text_recognition" />
     <string name="add_face">Add Face</string>
     <string name="oui">Oui</string>
+    <string name="enter_some_text">Enter some text</string>
 </resources>

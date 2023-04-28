@@ -17,17 +17,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
+
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="@string/select_image_for_text_recognition"
         android:scaleType="centerCrop"
-        app:layout_constraintStart_toStartOf="@id/preview"
-        app:layout_constraintEnd_toEndOf="@id/preview"
-        app:layout_constraintTop_toTopOf="@id/preview"
         app:layout_constraintBottom_toBottomOf="@id/preview"
-        android:contentDescription="@string/select_image_for_text_recognition" />
-
+        app:layout_constraintEnd_toEndOf="@id/preview"
+        app:layout_constraintStart_toStartOf="@id/preview"
+        app:layout_constraintTop_toTopOf="@id/preview" />
 
     <com.iristick.camera.template.helpers.vision.GraphicOverlay
         android:id="@+id/graphic_overlay"
@@ -41,27 +41,31 @@
 
     <TextView
         android:id="@+id/test"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text=""
-        >
-    </TextView>
+        android:layout_width="263dp"
+        android:layout_height="126dp"
+        android:layout_alignParentBottom="false"
+        android:text="" />
 
-    <EditText
-        android:id="@+id/dlg_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/oui"
-        android:autofillHints=""
-        android:inputType="text"
-        tools:ignore="LabelFor" />
+<!--    <EditText-->
+<!--        android:id="@+id/dlg_input"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:background="@color/white"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:layout_margin="10dp"-->
+<!--        android:paddingHorizontal="60dp"-->
+<!--        android:text=""-->
+<!--        android:autofillHints=""-->
+<!--        android:inputType="text"-->
+<!--        tools:ignore="LabelFor" />-->
 
     <Button
         android:id="@+id/addFaceButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="20dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="@string/add_face" />
