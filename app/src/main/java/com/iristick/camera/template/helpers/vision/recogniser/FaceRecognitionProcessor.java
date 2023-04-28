@@ -30,6 +30,9 @@ import org.tensorflow.lite.support.image.ImageProcessor;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.image.ops.ResizeOp;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,6 +129,8 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                                 return;
                             }
 
+                            //writeError("arrive1", activity.getFilesDir().toString());
+
                             TensorImage tensorImage = TensorImage.fromBitmap(faceBitmap);
                             ByteBuffer faceNetByteBuffer = faceNetImageProcessor.process(tensorImage).getBuffer();
                             float[][] faceOutputArray = new float[1][192];
@@ -135,6 +140,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
                             if (callback != null) {
                                 callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
+                                writeError("arrive2", activity.getFilesDir().toString());
                                 if (!recognisedFaceList.isEmpty()) {
                                     Pair<String, Float> result = findNearestFace(faceOutputArray[0]);
                                     // if distance is within confidence
@@ -209,5 +215,19 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     // Register a name against the vector
     public void registerFace(Editable input, float[] tempVector) {
         recognisedFaceList.add(new Person(input.toString(), tempVector));
+    }
+
+    public static void writeError(String msg,String loc){
+        try {
+            File file = new File(loc + "/error");
+
+            FileOutputStream stream = new FileOutputStream(file);
+
+            stream.write(msg.getBytes());
+
+            stream.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 }

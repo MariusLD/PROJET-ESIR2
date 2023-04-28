@@ -9,4 +9,6 @@
     <string name="focus">Focus</string>
     <string name="take_picture">Take picture</string>
     <string name="select_image_for_text_recognition" />
+    <string name="add_face">Add Face</string>
+    <string name="oui">Oui</string>
 </resources>

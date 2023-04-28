@@ -7,6 +7,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -30,10 +31,14 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.mlkit.vision.face.Face;
 import com.iristick.camera.template.helpers.MLVideoHelperActivity;
 import com.iristick.camera.template.helpers.vision.GraphicOverlay;
@@ -134,6 +139,8 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     private CameraDevice mCamera;
     private Surface mSurface;
     private CaptureSession mCaptureSession;
+
+    private Button mAddFaceButton;
     private int pictures_number;
 
     private double start_timer = System.currentTimeMillis();
@@ -147,30 +154,19 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
         mPreview = findViewById(R.id.preview);
 
+        mAddFaceButton = findViewById(R.id.addFaceButton);
+
+        mAddFaceButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                onAddFaceClicked(v);
+            }
+        });
+
         imageView = (ImageView) findViewById(R.id.image_view);
 
         cameraOffset = new Point(0,0);
 
-//        Handler handler = new Handler();
-//        Runnable runnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                if(pictures_number >= 48) {
-//                    createCaptureSession();
-//                    pictures_number = 0;
-//                }
-//                // Call your function here
-//                takePicture();
-//                pictures_number++;
-//
-//                TextView testView = (TextView) MainActivity.this.findViewById(R.id.test);
-//                testView.setText("Nombre photos : "+ pictures_number);
-//
-//                // Call the runnable again after a specified delay
-//                handler.postDelayed(this, 3000); // 1000ms = 1 second
-//            }
-//        };
-//
         Bitmap bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(bitmap);
@@ -182,7 +178,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
         imageView.setImageBitmap(bitmap);
 
-        //handler.postDelayed(runnable, 3000);
+        faceRecognitionProcessor = (FaceRecognitionProcessor) setProcessor();
 
         requestPermissions();
         //makeAddFaceVisible();
@@ -498,8 +494,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
         @Override
         public void onCaptureCompleted(@NonNull CaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult result) {
-
-            mGraphicOverlay.clear();
+            //mGraphicOverlay.clear();
             Image image = mImageReader.acquireLatestImage();
             if (image != null) {
 
@@ -514,40 +509,41 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
                 mSelectedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                 // Get the dimensions of the View
-                Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
+//                Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
 
-                int targetWidth = targetedSize.first;
-                int maxHeight = targetedSize.second;
+//                int targetWidth = targetedSize.first;
+//                int maxHeight = targetedSize.second;
+//
+//                // Determine how much to scale down the image
+//                float scaleFactor =
+//                        Math.max(
+//                                (float) mSelectedImage.getWidth() / (float) targetWidth,
+//                                (float) mSelectedImage.getHeight() / (float) maxHeight);
+//
+//                Bitmap resizedBitmap =
+//                        Bitmap.createScaledBitmap(
+//                                mSelectedImage,
+//                                (int) (mSelectedImage.getWidth() / scaleFactor),
+//                                (int) (mSelectedImage.getHeight() / scaleFactor),
+//                                true);
+//
+//
+                imageView.setImageBitmap(mSelectedImage);
+//                mSelectedImage = resizedBitmap;
 
-                // Determine how much to scale down the image
-                float scaleFactor =
-                        Math.max(
-                                (float) mSelectedImage.getWidth() / (float) targetWidth,
-                                (float) mSelectedImage.getHeight() / (float) maxHeight);
+                Task<List<Face>> test = faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
+                //writeError(face==null ? "non" : face.toString(), getFilesDir().toString());
 
-                Bitmap resizedBitmap =
-                        Bitmap.createScaledBitmap(
-                                mSelectedImage,
-                                (int) (mSelectedImage.getWidth() / scaleFactor),
-                                (int) (mSelectedImage.getHeight() / scaleFactor),
-                                true);
-
-
-                imageView.setImageBitmap(resizedBitmap);
-                mSelectedImage = resizedBitmap;
-
-
-                try{
-                    faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
-                } catch (Exception e) {
-
-                    //open a file, write the error and close it
-
-
-                    e.printStackTrace();
-
-                }
-                writeError("1" ,getFilesDir().toString());
+                test.addOnSuccessListener(new OnSuccessListener<List<Face>>() {
+                    @Override
+                    public void onSuccess(List<Face> faces) {
+                        if(faces.size()>0) {
+                            //onFaceDetected(faces.get(0), );
+                        }
+                        //writeError(String.valueOf(faces.size()), getFilesDir().toString());
+                    }
+                });
+                //writeError("1" ,getFilesDir().toString());
 
             } else {
                 Toast.makeText(MainActivity.this, "No picture taken", Toast.LENGTH_SHORT).show();
@@ -672,12 +668,12 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         try {
             faceNetInterpreter = new Interpreter(FileUtil.loadMappedFile(this, "mobile_face_net.tflite"), new Interpreter.Options());
         } catch (IOException e) {
+            writeError("interpreter failed", getFilesDir().toString());
             e.printStackTrace();
         }
-
         faceRecognitionProcessor = new FaceRecognitionProcessor(
                 faceNetInterpreter,
-                graphicOverlay,
+                mGraphicOverlay,
                 this
         );
         faceRecognitionProcessor.activity = this;
@@ -708,6 +704,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         super.onAddFaceClicked(view);
 
         if (face == null || faceBitmap == null) {
+            writeError("rate", getFilesDir().toString());
             return;
         }
 
