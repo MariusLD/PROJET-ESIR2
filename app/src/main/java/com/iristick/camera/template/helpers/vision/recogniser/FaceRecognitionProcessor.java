@@ -140,23 +140,14 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                             Log.d(TAG, "output array: " + Arrays.deepToString(faceOutputArray));
 
                             if (callback != null) {
-                                callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
-                                mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                                findNearestFace(faceOutputArray[0], new OnNearestFaceFoundListener() {
                                     @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        if (dataSnapshot.exists()) {
-                                            Pair<String, Float> result = findNearestFace(faceOutputArray[0]);
-                                            // if distance is within confidence
-                                            if (result.second < 1.0f) {
-                                                faceGraphic.name = result.first;
-                                                callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
-                                            }
+                                    public void onNearestFaceFound(Pair<String, Float> result) {
+                                        // if distance is within confidence
+                                        if (result != null && result.second < 1.0f) {
+                                            faceGraphic.name = result.first;
+                                            callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
                                         }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                                        Log.d(TAG, "onCancelled", databaseError.toException());
                                     }
                                 });
                             }
@@ -173,16 +164,16 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                 });
     }
 
+
     // looks for the nearest vector in the dataset (using L2 norm)
     // and returns the pair <name, distance>
-    private Pair<String, Float> findNearestFace(float[] vector) {
+    private void findNearestFace(float[] vector, final OnNearestFaceFoundListener listener) {
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
 
-        final Pair<String, Float>[] ret = new Pair[]{null};
-
-        mDatabase.addValueEventListener(new ValueEventListener() {
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Pair<String, Float> ret = null;
                 for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
                     Person person = personSnapshot.getValue(Person.class);
                     final String name = person.name;
@@ -194,13 +185,14 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                     float distance = 0;
                     for (int i = 0; i < vector.length; i++) {
                         float diff = vector[i] - knownVector[i];
-                        distance += diff*diff;
+                        distance += diff * diff;
                     }
                     distance = (float) Math.sqrt(distance);
-                    if (ret[0] == null || distance < ret[0].second) {
-                        ret[0] = new Pair<>(name, distance);
+                    if (ret == null || distance < ret.second) {
+                        ret = new Pair<>(name, distance);
                     }
                 }
+                listener.onNearestFaceFound(ret);
             }
 
             @Override
@@ -208,7 +200,10 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                 // Handle errors here
             }
         });
-        return ret[0];
+    }
+
+    public interface OnNearestFaceFoundListener {
+        void onNearestFaceFound(Pair<String, Float> result);
     }
 
 
