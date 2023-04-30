@@ -11,6 +11,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 
+import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,6 +44,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
@@ -178,29 +181,38 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
     private Task<Pair<String, Float>> findNearestFace(float[] vector) {
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
-        return Tasks.call(() -> {
-            Pair<String, Float> ret = null;
-            DataSnapshot dataSnapshot = Tasks.await(mDatabase.get());
-            for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
-                Person person = personSnapshot.getValue(Person.class);
-                final String name = person.name;
-                final float[] knownVector = new float[person.faceVector.size()];
-                for (int i = 0; i < person.faceVector.size(); i++) {
-                    knownVector[i] = person.faceVector.get(i);
-                }
+        final TaskCompletionSource<Pair<String, Float>> tcs = new TaskCompletionSource<>();
 
-                float distance = 0;
-                for (int i = 0; i < vector.length; i++) {
-                    float diff = vector[i] - knownVector[i];
-                    distance += diff*diff;
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            Pair<String, Float> ret = null;
+            try {
+                DataSnapshot dataSnapshot = Tasks.await(mDatabase.get());
+                for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
+                    Person person = personSnapshot.getValue(Person.class);
+                    final String name = person.name;
+                    final float[] knownVector = new float[person.faceVector.size()];
+                    for (int i = 0; i < person.faceVector.size(); i++) {
+                        knownVector[i] = person.faceVector.get(i);
+                    }
+
+                    float distance = 0;
+                    for (int i = 0; i < vector.length; i++) {
+                        float diff = vector[i] - knownVector[i];
+                        distance += diff*diff;
+                    }
+                    distance = (float) Math.sqrt(distance);
+                    if (ret == null || distance < ret.second) {
+                        ret = new Pair<>(name, distance);
+                    }
                 }
-                distance = (float) Math.sqrt(distance);
-                if (ret == null || distance < ret.second) {
-                    ret = new Pair<>(name, distance);
-                }
+                tcs.setResult(ret);
+            } catch (Exception e) {
+                tcs.setException(e);
             }
-            return ret;
         });
+
+        return tcs.getTask();
     }
 
 
