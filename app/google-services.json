@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "724440954198",
+    "firebase_url": "https://iristick-9ef4e-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "iristick-9ef4e",
+    "storage_bucket": "iristick-9ef4e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724440954198:android:84901e3cbab3f5671292f7",
+        "android_client_info": {
+          "package_name": "com.iristick.camera.template"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "724440954198-mrs8g6ooa5is30982v2mcsnkcn6drule.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoqV1wVwq9wKWopDOv6Q2H6ohzukoQLNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "724440954198-mrs8g6ooa5is30982v2mcsnkcn6drule.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

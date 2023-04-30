@@ -11,6 +11,11 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.iristick.camera.template.MainActivity;
 import com.iristick.camera.template.helpers.vision.FaceGraphic;
 import com.iristick.camera.template.helpers.vision.VisionBaseProcessor;
@@ -55,6 +60,8 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         void onFaceDetected(Face face, Bitmap faceBitmap, float[] vector);
     }
 
+    private static final DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
+
     private static final String TAG = "FaceRecognitionProcessor";
 
     // Input image size for our facenet model
@@ -67,8 +74,6 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     private final FaceRecognitionCallback callback;
 
     public MainActivity activity;
-
-    List<Person> recognisedFaceList = new ArrayList();
 
     public FaceRecognitionProcessor(Interpreter faceNetModelInterpreter,
                                     GraphicOverlay graphicOverlay,
@@ -118,9 +123,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                         for (Face face : faces) {
                             FaceGraphic faceGraphic = new FaceGraphic(graphicOverlay, face, false, width, height);
                             Log.d(TAG, "face found, id: " + face.getTrackingId());
-//                            if (activity != null) {
-//                                activity.setTestImage(cropToBBox(bitmap, face.getBoundingBox(), rotation));
-//                            }
+//
                             // now we have a face, so we can use that to analyse age and gender
                             Bitmap faceBitmap = cropToBBox(bitmap, face.getBoundingBox(), rotation);
 
@@ -128,8 +131,6 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                                 Log.d("GraphicOverlay", "Face bitmap null");
                                 return;
                             }
-
-                            //writeError("arrive1", activity.getFilesDir().toString());
 
                             TensorImage tensorImage = TensorImage.fromBitmap(faceBitmap);
                             ByteBuffer faceNetByteBuffer = faceNetImageProcessor.process(tensorImage).getBuffer();
@@ -140,14 +141,24 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
                             if (callback != null) {
                                 callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
-                                if (!recognisedFaceList.isEmpty()) {
-                                    Pair<String, Float> result = findNearestFace(faceOutputArray[0]);
-                                    // if distance is within confidence
-                                    if (result.second < 1.0f) {
-                                        faceGraphic.name = result.first;
-                                        callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
+                                mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            Pair<String, Float> result = findNearestFace(faceOutputArray[0]);
+                                            // if distance is within confidence
+                                            if (result.second < 1.0f) {
+                                                faceGraphic.name = result.first;
+                                                callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
+                                            }
+                                        }
                                     }
-                                }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        Log.d(TAG, "onCancelled", databaseError.toException());
+                                    }
+                                });
                             }
 
                             graphicOverlay.add(faceGraphic);
@@ -165,26 +176,39 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     // looks for the nearest vector in the dataset (using L2 norm)
     // and returns the pair <name, distance>
     private Pair<String, Float> findNearestFace(float[] vector) {
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
 
-        Pair<String, Float> ret = null;
-        for (Person person : recognisedFaceList) {
-            final String name = person.name;
-            final float[] knownVector = person.faceVector;
+        final Pair<String, Float>[] ret = new Pair[]{null};
 
-            float distance = 0;
-            for (int i = 0; i < vector.length; i++) {
-                float diff = vector[i] - knownVector[i];
-                distance += diff*diff;
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
+                    Person person = personSnapshot.getValue(Person.class);
+                    final String name = person.name;
+                    final float[] knownVector = person.faceVector;
+
+                    float distance = 0;
+                    for (int i = 0; i < vector.length; i++) {
+                        float diff = vector[i] - knownVector[i];
+                        distance += diff*diff;
+                    }
+                    distance = (float) Math.sqrt(distance);
+                    if (ret[0] == null || distance < ret[0].second) {
+                        ret[0] = new Pair<>(name, distance);
+                    }
+                }
             }
-            distance = (float) Math.sqrt(distance);
-            if (ret == null || distance < ret.second) {
-                ret = new Pair<>(name, distance);
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Handle errors here
             }
-        }
-
-        return ret;
-
+        });
+        return ret[0];
     }
+
+
 
     public void stop() {
         detector.close();
@@ -213,12 +237,9 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
     // Register a name against the vector
     public void registerFace(Editable input, float[] tempVector) {
-        recognisedFaceList.add(new Person(input.toString(), tempVector));
-        StringBuilder names = new StringBuilder();
-        for(Person p : recognisedFaceList) {
-            names.append(p.name).append(" ");
-        }
-        //writeError(names.toString(), activity.getFilesDir().toString());
+        // Add Person to Firebase
+        Person nPerson = new Person(input.toString(), tempVector);
+        mDatabase.push().setValue(nPerson);
     }
 
     public static void writeError(String msg,String loc){

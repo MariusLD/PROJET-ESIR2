@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -85,4 +86,10 @@ dependencies {
 
     // Face features
     implementation 'com.google.mlkit:face-detection:16.1.5'
+
+    // Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:31.5.0')
+
+    // Firebase Realtime Database
+    implementation 'com.google.firebase:firebase-database'
 }
