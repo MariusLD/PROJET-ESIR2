@@ -1,0 +1,14 @@
+@startuml Domain
+
+object User
+object Phone
+object Glasses
+object Camera
+object Application
+
+User "use"--> Glasses
+Camera -right-* Glasses
+Application -left-* Phone
+Glasses -right- Phone
+
+@enduml

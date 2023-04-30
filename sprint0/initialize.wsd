@@ -1,0 +1,29 @@
+@startuml Initialize
+'Bon déroulement
+skinparam actorStyle awesome
+
+
+Actor User as U #lightgreen
+Participant System as S #lightblue
+
+
+U -> S: Connect the phone to the dock
+U -> S: Connect the glasses to the phone
+U -> S: Launch the app on the phone
+alt Good connection
+S -> U: Ask for access to the peripheral
+alt Authorize
+U -> S: Authorize the connection
+S -> U: Display the interface
+U -> S: Launch the program
+else Reject
+U -> S: Reject the connection
+S -> U: Connection error
+end
+else Bad connection
+S -> U: Detection error of the device
+U -> S: Retry with good connection
+end
+
+
+@enduml

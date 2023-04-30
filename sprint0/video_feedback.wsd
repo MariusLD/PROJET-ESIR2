@@ -1,0 +1,18 @@
+@startuml VideoFeedback
+skinparam actorStyle awesome
+
+Actor User as U #lightgreen
+Participant Glasses as G #lightsalmon
+Participant App as S #lightblue
+
+
+U -> G: Watch faces through the glasses
+G -> S: Send video stream
+S -> S: Analyse the video
+S -> G: Get modified videostream
+
+G -> U: Display videostream with names
+
+'Donner feedback
+'Ajouter directement depuis les lunettes
+@enduml

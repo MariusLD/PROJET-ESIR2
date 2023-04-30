@@ -1,0 +1,29 @@
+@startuml
+skinparam actorStyle awesome
+
+'title "Analyse Video Stream Diragram"
+
+participant Glasses as G #LightSalmon
+participant Application as S #lightblue
+
+G -> S : Send the main video stream
+
+
+alt Time to analyse a new frame
+    S -> S : Recover a frame from the main video stream
+    S -> S : Try recognize the faces in the frame
+
+    alt Face recognized
+        S -> S : Modify the frame by adding the name of the recognized face
+    else Face not recognized
+        S -> S : Don't modify the frame
+    end
+
+    S -> S : Store the modified frame
+    S -> G : Send the modified frame
+
+else Not time to analyse a new frame
+    S -> G : Send the last analysed frame stored
+end
+
+@enduml

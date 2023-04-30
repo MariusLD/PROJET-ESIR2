@@ -1,0 +1,38 @@
+@startuml Domain
+top to bottom direction
+
+component Glasses {
+    component Camera {
+    }
+
+    component Display {
+    }
+    portin EditedPhotosIn
+    portout VideoOut
+
+}
+
+component Application {
+    component Detector {
+    }
+
+    component Identifier {
+    }
+    portout EditedPhotosOut
+    portin VideoIn
+
+}
+
+() DataAccess
+
+EditedPhotosOut --> EditedPhotosIn
+VideoOut --> VideoIn
+EditedPhotosIn --> Display
+Camera --> VideoOut
+VideoIn --> Detector
+Identifier --> EditedPhotosOut
+Detector -right-> Identifier
+Identifier -right-> DataAccess
+
+
+@enduml
