@@ -49,6 +49,10 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         public String name;
         public List<Float> faceVector;
 
+        public Person() {
+            // Required empty constructor for Firebase Realtime Database deserialization
+        }
+
         public Person(String name, List<Float> faceVector) {
             this.name = name;
             this.faceVector = faceVector;
