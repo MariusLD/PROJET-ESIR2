@@ -51,7 +51,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     }
 
     public interface FaceRecognitionCallback {
-        void onFaceRecognised(Face face, float probability, String name);
+        void onFaceRecognised(Face face, Bitmap faceBitmap, float[] vector, float probability, String name);
         void onFaceDetected(Face face, Bitmap faceBitmap, float[] vector);
     }
 
@@ -145,7 +145,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                                     // if distance is within confidence
                                     if (result.second < 1.0f) {
                                         faceGraphic.name = result.first;
-                                        callback.onFaceRecognised(face, result.second, result.first);
+                                        callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
                                     }
                                 }
                             }
@@ -218,7 +218,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         for(Person p : recognisedFaceList) {
             names.append(p.name).append(" ");
         }
-        writeError(names.toString(), activity.getFilesDir().toString());
+        //writeError(names.toString(), activity.getFilesDir().toString());
     }
 
     public static void writeError(String msg,String loc){

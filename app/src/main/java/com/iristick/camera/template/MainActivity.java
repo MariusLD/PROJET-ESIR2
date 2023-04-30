@@ -34,6 +34,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -494,7 +495,6 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
         @Override
         public void onCaptureCompleted(@NonNull CaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult result) {
-            //mGraphicOverlay.clear();
             Image image = mImageReader.acquireLatestImage();
             if (image != null) {
 
@@ -508,42 +508,10 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
                 buffer.get(bytes);
 
                 mSelectedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-                // Get the dimensions of the View
-//                Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
 
-//                int targetWidth = targetedSize.first;
-//                int maxHeight = targetedSize.second;
-//
-//                // Determine how much to scale down the image
-//                float scaleFactor =
-//                        Math.max(
-//                                (float) mSelectedImage.getWidth() / (float) targetWidth,
-//                                (float) mSelectedImage.getHeight() / (float) maxHeight);
-//
-//                Bitmap resizedBitmap =
-//                        Bitmap.createScaledBitmap(
-//                                mSelectedImage,
-//                                (int) (mSelectedImage.getWidth() / scaleFactor),
-//                                (int) (mSelectedImage.getHeight() / scaleFactor),
-//                                true);
-//
-//
                 imageView.setImageBitmap(mSelectedImage);
-//                mSelectedImage = resizedBitmap;
 
-                Task<List<Face>> test = faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
-                //writeError(face==null ? "non" : "youpi ! " + face.toString(), getFilesDir().toString());
-
-                test.addOnSuccessListener(new OnSuccessListener<List<Face>>() {
-                    @Override
-                    public void onSuccess(List<Face> faces) {
-                        if(faces.size()>0) {
-                            //onFaceDetected(faces.get(0), );
-                        }
-                        //writeError(String.valueOf(faces.size()), getFilesDir().toString());
-                    }
-                });
-                //writeError("1" ,getFilesDir().toString());
+                faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
 
             } else {
                 Toast.makeText(MainActivity.this, "No picture taken", Toast.LENGTH_SHORT).show();
@@ -694,8 +662,26 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     }
 
     @Override
-    public void onFaceRecognised(Face face, float probability, String name) {
+    public void onFaceRecognised(Face face, Bitmap faceBitmap, float[] vector, float probability, String name) {
+        writeError("Reconnu : " + name, getFilesDir().toString());
 
+        if (face == null || faceBitmap == null) {
+            return;
+        }
+
+        Face tempFace = face;
+        Bitmap tempBitmap = faceBitmap;
+        float[] tempVector = vector;
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.recognized_face, null);
+        ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
+        ((TextView) dialogView.findViewById(R.id.dlg_input)).setText(name);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+
+        builder.show();
     }
 
     @Override

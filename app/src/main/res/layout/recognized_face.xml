@@ -11,7 +11,7 @@
         android:layout_centerHorizontal="true"
         android:layout_gravity="center"
         android:textSize="18sp"
-        android:text="Register new face"
+        android:text="Face recognized !"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
@@ -29,7 +29,7 @@
         android:src="@drawable/baseline_portrait_black_24"
         />
 
-    <EditText
+    <TextView
         android:id="@+id/dlg_input"
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
@@ -40,9 +40,7 @@
         android:layout_margin="10dp"
         android:background="@color/white"
         android:textColor="@color/black"
-        tools:hint="The dialog hint"
-        android:autofillHints=""
-        android:inputType="text"
+        android:text="?"
         tools:ignore="LabelFor"
         />
 
