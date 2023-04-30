@@ -11,6 +11,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,10 +49,6 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     class Person {
         public String name;
         public List<Float> faceVector;
-
-        public Person() {
-            // Required empty constructor for Firebase Realtime Database deserialization
-        }
 
         public Person(String name, List<Float> faceVector) {
             this.name = name;
@@ -102,6 +99,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     }
 
     //@OptIn(markerClass = ExperimentalGetImage.class)
+    @Override
     public Task<List<Face>> detectInImage(Image imageProxy, Bitmap bitmap, int rotationDegrees) {
         InputImage inputImage = InputImage.fromMediaImage(imageProxy, rotationDegrees);
         int rotation = rotationDegrees;
@@ -127,7 +125,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                         for (Face face : faces) {
                             FaceGraphic faceGraphic = new FaceGraphic(graphicOverlay, face, false, width, height);
                             Log.d(TAG, "face found, id: " + face.getTrackingId());
-//
+
                             // now we have a face, so we can use that to analyse age and gender
                             Bitmap faceBitmap = cropToBBox(bitmap, face.getBoundingBox(), rotation);
 
@@ -144,16 +142,18 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                             Log.d(TAG, "output array: " + Arrays.deepToString(faceOutputArray));
 
                             if (callback != null) {
-                                findNearestFace(faceOutputArray[0], new OnNearestFaceFoundListener() {
-                                    @Override
-                                    public void onNearestFaceFound(Pair<String, Float> result) {
-                                        // if distance is within confidence
-                                        if (result != null && result.second < 1.0f) {
-                                            faceGraphic.name = result.first;
-                                            callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
-                                        }
-                                    }
-                                });
+                                callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
+                                findNearestFace(faceOutputArray[0])
+                                        .addOnSuccessListener(result -> {
+                                            // if distance is within confidence
+                                            if (result.second < 1.0f) {
+                                                faceGraphic.name = result.first;
+                                                callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            // Handle errors here
+                                        });
                             }
 
                             graphicOverlay.add(faceGraphic);
@@ -169,45 +169,38 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     }
 
 
+
     // looks for the nearest vector in the dataset (using L2 norm)
     // and returns the pair <name, distance>
-    private void findNearestFace(float[] vector, final OnNearestFaceFoundListener listener) {
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
-
-        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Pair<String, Float> ret = null;
-                for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
-                    Person person = personSnapshot.getValue(Person.class);
-                    final String name = person.name;
-                    final float[] knownVector = new float[person.faceVector.size()];
-                    for (int i = 0; i < person.faceVector.size(); i++) {
-                        knownVector[i] = person.faceVector.get(i);
-                    }
-
-                    float distance = 0;
-                    for (int i = 0; i < vector.length; i++) {
-                        float diff = vector[i] - knownVector[i];
-                        distance += diff * diff;
-                    }
-                    distance = (float) Math.sqrt(distance);
-                    if (ret == null || distance < ret.second) {
-                        ret = new Pair<>(name, distance);
-                    }
-                }
-                listener.onNearestFaceFound(ret);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Handle errors here
-            }
-        });
+    interface OnResultCallback {
+        void onResult(Pair<String, Float> result);
     }
 
-    public interface OnNearestFaceFoundListener {
-        void onNearestFaceFound(Pair<String, Float> result);
+    private Task<Pair<String, Float>> findNearestFace(float[] vector) {
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
+        return Tasks.call(() -> {
+            Pair<String, Float> ret = null;
+            DataSnapshot dataSnapshot = Tasks.await(mDatabase.get());
+            for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
+                Person person = personSnapshot.getValue(Person.class);
+                final String name = person.name;
+                final float[] knownVector = new float[person.faceVector.size()];
+                for (int i = 0; i < person.faceVector.size(); i++) {
+                    knownVector[i] = person.faceVector.get(i);
+                }
+
+                float distance = 0;
+                for (int i = 0; i < vector.length; i++) {
+                    float diff = vector[i] - knownVector[i];
+                    distance += diff*diff;
+                }
+                distance = (float) Math.sqrt(distance);
+                if (ret == null || distance < ret.second) {
+                    ret = new Pair<>(name, distance);
+                }
+            }
+            return ret;
+        });
     }
 
 
