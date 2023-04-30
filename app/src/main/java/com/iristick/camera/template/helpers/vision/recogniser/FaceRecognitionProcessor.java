@@ -47,9 +47,9 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
     class Person {
         public String name;
-        public float[] faceVector;
+        public List<Float> faceVector;
 
-        public Person(String name, float[] faceVector) {
+        public Person(String name, List<Float> faceVector) {
             this.name = name;
             this.faceVector = faceVector;
         }
@@ -186,7 +186,10 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                 for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
                     Person person = personSnapshot.getValue(Person.class);
                     final String name = person.name;
-                    final float[] knownVector = person.faceVector;
+                    final float[] knownVector = new float[person.faceVector.size()];
+                    for (int i = 0; i < person.faceVector.size(); i++) {
+                        knownVector[i] = person.faceVector.get(i);
+                    }
 
                     float distance = 0;
                     for (int i = 0; i < vector.length; i++) {
@@ -237,8 +240,12 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
     // Register a name against the vector
     public void registerFace(Editable input, float[] tempVector) {
+        List<Float> result = new ArrayList<Float>(tempVector.length);
+        for (float f : tempVector) {
+            result.add(f);
+        }
         // Add Person to Firebase
-        Person nPerson = new Person(input.toString(), tempVector);
+        Person nPerson = new Person(input.toString(), result);
         mDatabase.push().setValue(nPerson);
     }
 
