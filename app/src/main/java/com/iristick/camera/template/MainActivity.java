@@ -151,12 +151,16 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Get the Overlay of the face detected
         mGraphicOverlay = findViewById(R.id.graphic_overlay);
 
+        //Get the video stream
         mPreview = findViewById(R.id.preview);
 
+        //Get the button
         mAddFaceButton = findViewById(R.id.addFaceButton);
 
+        //Add the event to add a face to the database
         mAddFaceButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -164,27 +168,24 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
             }
         });
 
+        //Get the image and set it to a red image to initialize it
         imageView = (ImageView) findViewById(R.id.image_view);
-
         cameraOffset = new Point(0,0);
-
         Bitmap bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888);
-
         Canvas canvas = new Canvas(bitmap);
-
         Paint paint = new Paint();
         paint.setColor(Color.RED);
-
         canvas.drawRect(0, 0, 500, 500, paint);
-
         imageView.setImageBitmap(bitmap);
 
+        //Initial the processor who will be used to recognize faces
         faceRecognitionProcessor = (FaceRecognitionProcessor) setProcessor();
 
+        //Ask for permissions
         requestPermissions();
-        //makeAddFaceVisible();
     }
 
+    //Ask for permissions in the PERMISISSIONS list (camera and external storage)
     private void requestPermissions() {
         List<String> ungranted = new ArrayList<>();
         for (String permissions : MainActivity.PERMISSIONS) {
@@ -208,11 +209,13 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
                     checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
+            //Get the id of the main camera that will be used and set it
             String cameraId = cameras[CENTER_CAMERA];
             CameraCharacteristics characteristics = mHeadset.getCameraCharacteristics(cameraId);
 
             mPreview.setSurfaceTextureListener(mSurfaceTextureListener);
 
+            //Initialize the camera
             openCamera();
         }
     }
@@ -234,6 +237,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
                      * event.getMotionEvent() returns the precise motion data or
                      *     null if such data is not available.
                      */
+                    //Takes a picture when you touch the side of the glasses with a cooldown of 1 second to avoid spamming
                     if(event.getGestureCode() == GESTURE_TAP) {
                         double timer = System.currentTimeMillis();
                         if(timer-start_timer > 1000) {
@@ -279,8 +283,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-
-
+        //Takes a picture when you touch the screen of the phone with a cooldown of 1 second to avoid spamming
         double timer = System.currentTimeMillis();
         if(timer-start_timer > 1000) {
             start_timer = timer;
@@ -289,7 +292,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         return super.onTouchEvent(event);
     }
 
-
+    //Setup the camera with the max number of images taken and the id of the camera
     private void openCamera() {
         if (mHeadset == null)
             return;
@@ -310,6 +313,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         mHeadset.openCamera(id, mCameraListener, null);
     }
 
+    //Add a listener on the TextureView which corresponds to the video stream
     private final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -390,6 +394,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         }
     };
 
+    //Transform the video stream to a format adapted to the phone screen
     private void setupTransform(TextureView view) {
         float disp_ratio = (float) view.getWidth() / (float) view.getHeight();
         float frame_ratio = (float) FRAME_WIDTH / (float) FRAME_HEIGHT;
@@ -403,6 +408,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         view.setTransform(transform);
     }
 
+    //Launch the capture session for the video stream
     private void createCaptureSession() {
         if (mCamera == null || mSurface == null)
             return;
@@ -420,6 +426,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         mCamera.createCaptureSession(outputs, mCaptureSessionListener, null);
     }
 
+    //Setup the capture of the video
     private void setupCaptureRequest(CaptureRequest.Builder builder) {
         builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
         builder.set(CaptureRequest.SCALER_ZOOM, zoomLevel);
@@ -428,6 +435,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         builder.set(CaptureRequest.POSTPROCESS_BARCODE_FORMATS, BARCODE_FORMATS);
     }
 
+    //Initialize the capture session of the video stream
     private void setCapture() {
         if (mCaptureSession == null || mSurface == null) {
             return;
@@ -455,11 +463,13 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         mCaptureSession.capture(builder.build(), null, null);
     }
 
+    //Function to call when it is needed to take a picture
     private void takePicture() {
         if (mCaptureSession == null || mSurface == null) {
             return;
         }
 
+        //Number of pictures taken, used to verify we do not go over the limit of 50
         pictures_number++;
 
         CaptureRequest.Builder builder = mCamera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
@@ -469,9 +479,9 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
 
         mCaptureSession.capture(builder.build(), mCaptureListenerTakePicture, null);
 
-
     }
 
+    //Capture listener for the barcode, not used in the project but available
     private final CaptureListener mCaptureListenerBarcode = new CaptureListener2() {
         @Override
         public void onPostProcessCompleted(CaptureSession session, CaptureRequest request, CaptureResult result) {
@@ -491,26 +501,31 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         }
     };
 
+    //Main function, when a capture is completed, process the image to detect or recognize a face
     private final CaptureListener mCaptureListenerTakePicture = new CaptureListener2() {
 
         @Override
         public void onCaptureCompleted(@NonNull CaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult result) {
+            //Get the image lastly taken
             Image image = mImageReader.acquireLatestImage();
             if (image != null) {
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
-
+                //Get the image view
                 ImageView imageView = (ImageView) findViewById(R.id.image_view);
 
 
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
 
+                //Turn the taken image into a bitmap
                 mSelectedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
+                //Set the view with this image
                 imageView.setImageBitmap(mSelectedImage);
 
+                //Call of detectInImage to detect and recognize faces
                 faceRecognitionProcessor.detectInImage(image, mSelectedImage,0);
 
             } else {
@@ -519,6 +534,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         }
     };
 
+    //Vocal events not available in Iristick G2 but existing with other glasses
     private final VoiceEvent.Callback mVoiceCallback = event -> {
         switch (VoiceCommand.VALUES[event.getCommandIndex()]) {
             case TAKE_PICTURE:
@@ -549,6 +565,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         }
     };
 
+    //Active the light torch
     private void toggleTorch() {
         isTorchActive = !isTorchActive;
         if (mHeadset != null) {
@@ -556,6 +573,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         }
     }
 
+    //Allows to zoomIn
     private void zoomIn(boolean zoomingIn) {
         String camera = mHeadset.getCameraIdList()[CENTER_CAMERA];
         CameraCharacteristics mCameraCharacteristics = mHeadset.getCameraCharacteristics(camera);
@@ -631,6 +649,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     }
 
 
+    //Loads the IA model to use and initialize the overlay, the activity and the faceNetInterpreter (IA model)
     @Override
     protected VisionBaseProcessor setProcessor() {
         try {
@@ -654,6 +673,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         runOnUiThread(() -> ((ImageView) findViewById(R.id.image_view)).setImageBitmap(cropToBBox));
     }
 
+    //When a face is detected, change the information of the face recognized
     @Override
     public void onFaceDetected(Face face, Bitmap faceBitmap, float[] faceVector) {
         this.face = face;
@@ -661,9 +681,9 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         this.faceVector = faceVector;
     }
 
+    //When a face is recognize, get the information of the face detected and show a popup with the image and the name of the person recognized
     @Override
     public void onFaceRecognised(Face face, Bitmap faceBitmap, float[] vector, float probability, String name) {
-        writeError("Reconnu : " + name, getFilesDir().toString());
 
         if (face == null || faceBitmap == null) {
             return;
@@ -674,6 +694,8 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         float[] tempVector = vector;
 
         LayoutInflater inflater = LayoutInflater.from(this);
+
+        //Set the image and the text view with the good face and name
         View dialogView = inflater.inflate(R.layout.recognized_face, null);
         ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
         ((TextView) dialogView.findViewById(R.id.dlg_input)).setText(name);
@@ -684,6 +706,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         builder.show();
     }
 
+    //Function called when clicking on "Add Face" Button, add the last detected face to the database
     @Override
     public void onAddFaceClicked(View view) {
         super.onAddFaceClicked(view);
@@ -696,12 +719,15 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
         Bitmap tempBitmap = faceBitmap;
         float[] tempVector = faceVector;
 
+        //Set the popup with the image of the face detected
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.add_face_dialog, null);
         ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
+
+        //Get the text corresponding to the name entered when clicking on "Save"
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -715,6 +741,7 @@ public class MainActivity extends MLVideoHelperActivity implements FaceRecogniti
     }
 
 
+    //Debug function used to write error in a .txt file to localize errors
     public static void writeError(String msg,String loc){
         try {
             File file = new File(loc + "/error");

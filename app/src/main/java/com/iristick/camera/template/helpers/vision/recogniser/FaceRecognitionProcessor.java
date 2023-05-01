@@ -63,11 +63,13 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         }
     }
 
+    //Interface to interact with the MainActivity
     public interface FaceRecognitionCallback {
         void onFaceRecognised(Face face, Bitmap faceBitmap, float[] vector, float probability, String name);
         void onFaceDetected(Face face, Bitmap faceBitmap, float[] vector);
     }
 
+    //Get the FireBase database
     private static final DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("Person");
 
     private static final String TAG = "FaceRecognitionProcessor";
@@ -99,13 +101,12 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                 .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
                 .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
-                // to ensure we don't count and analyse same person again
+                //To ensure we don't count and analyse same person again
                 .enableTracking()
                 .build();
         detector = FaceDetection.getClient(faceDetectorOptions);
     }
 
-    //@OptIn(markerClass = ExperimentalGetImage.class)
     @Override
     public Task<List<Face>> detectInImage(Image imageProxy, Bitmap bitmap, int rotationDegrees) {
         InputImage inputImage = InputImage.fromMediaImage(imageProxy, rotationDegrees);
@@ -133,7 +134,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                             FaceGraphic faceGraphic = new FaceGraphic(graphicOverlay, face, false, width, height);
                             Log.d(TAG, "face found, id: " + face.getTrackingId());
 
-                            // now we have a face, so we can use that to analyse age and gender
+                            //Crop the image to only fit the face
                             Bitmap faceBitmap = cropToBBox(bitmap, face.getBoundingBox(), rotation);
 
                             if (faceBitmap == null) {
@@ -141,6 +142,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                                 return;
                             }
 
+                            //Get the image and apply the IA model to determine the vector associated with the face
                             TensorImage tensorImage = TensorImage.fromBitmap(faceBitmap);
                             ByteBuffer faceNetByteBuffer = faceNetImageProcessor.process(tensorImage).getBuffer();
                             float[][] faceOutputArray = new float[1][192];
@@ -149,17 +151,19 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                             Log.d(TAG, "output array: " + Arrays.deepToString(faceOutputArray));
 
                             if (callback != null) {
+                                //If a face is detected, call the function implemented in the MainActivity
                                 callback.onFaceDetected(face, faceBitmap, faceOutputArray[0]);
+                                //Find the nearest face in the database to identify whose face it is
                                 findNearestFace(faceOutputArray[0])
                                         .addOnSuccessListener(result -> {
-                                            // if distance is within confidence
+                                            //If distance is within confidence
                                             if (result.second < 1.0f) {
                                                 faceGraphic.name = result.first;
+                                                //If a face is recognized, call the function implemented in the MainActivity
                                                 callback.onFaceRecognised(face, faceBitmap, faceOutputArray[0], result.second, result.first);
                                             }
                                         })
                                         .addOnFailureListener(e -> {
-                                            // Handle errors here
                                         });
                             }
 
@@ -183,30 +187,27 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         void onResult(Pair<String, Double> result);
     }
 
+    //Find the person which corresponds to the detected face
     private Task<Pair<String, Float>> findNearestFace(float[] vector) {
         final TaskCompletionSource<Pair<String, Float>> tcs = new TaskCompletionSource<>();
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        AtomicReference<String> test = new AtomicReference<>("");
         List<Float> error = new ArrayList<>();
         executor.execute(() -> {
             Pair<String, Float> ret = null;
             try {
                 DataSnapshot dataSnapshot = Tasks.await(mDatabase.get());
-                writeError("DataSnapshot : " + dataSnapshot.toString(), activity.getFilesDir().toString());
-                //writeError("DataSnapshotChildren : " + dataSnapshot.getChildren().iterator().next().toString(), activity.getFilesDir().toString());
                 for (DataSnapshot personSnapshot : dataSnapshot.getChildren()) {
 
+                    //Get the name and faceVector of each person
                     final String name = personSnapshot.child("name").getValue(String.class);
                     final List<Double> faceVector = (List<Double>) personSnapshot.child("faceVector").getValue();
 
-                    test.set(String.valueOf(faceVector));
                     float[] knownVector = new float[faceVector.size()];
-                    //test.set(String.valueOf(faceVector.size()));
                     for (int i = 0; i < faceVector.size(); i++) {
                         knownVector[i] = faceVector.get(i).floatValue();
                     }
-                    test.set(String.valueOf(knownVector[0]));
+                    //Compare each face to the current detected face
                     float distance = 0;
                     for (int i = 0; i < vector.length; i++) {
                         double diff = vector[i] - knownVector[i];
@@ -217,11 +218,8 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                         ret = new Pair<>(name, distance);
                     }
                 }
-                //writeError(test.get(), activity.getFilesDir().toString());
                 tcs.setResult(ret);
             } catch (Exception e) {
-                writeError(e.toString()  + " " + String.valueOf(e.getStackTrace()[0].getLineNumber() + " " + System.currentTimeMillis()), activity.getFilesDir().toString());
-                //writeError(test.get(), activity.getFilesDir().toString());
                 tcs.setException(e);
             }
         });
@@ -235,6 +233,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         detector.close();
     }
 
+    //Get only the square needed with the face within
     private Bitmap cropToBBox(Bitmap image, Rect boundingBox, int rotation) {
         int shift = 0;
         if (rotation != 0) {
@@ -267,6 +266,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
         mDatabase.push().setValue(nPerson);
     }
 
+    //Debug function used to write error in a .txt file to localize errors
     public static void writeError(String msg,String loc){
         try {
             File file = new File(loc + "/error");
